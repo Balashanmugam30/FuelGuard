@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FuelGuard AI — AI-powered petrol fraud detection and fuel verification system." />
+  <title>FuelGuard AI — Fuel Fraud Detection</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ====== Header ====== -->
+  <header class="header">
+    <div class="container header-inner">
+      <div class="header-brand">
+        <div class="header-logo">FG</div>
+        <div>
+          <div class="header-title">FuelGuard AI</div>
+          <div class="header-subtitle">Fuel Fraud Detection System</div>
+        </div>
+      </div>
+      <nav class="header-nav" id="mainNav">
+        <a href="#simulation" class="active">Simulation</a>
+        <a href="#analytics">Analytics</a>
+        <a href="#charts">Charts</a>
+        <a href="#transactions">Transactions</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ====== Status Bar ====== -->
+  <div class="status-bar">
+    <div class="container status-bar-inner">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Checking backend…</span>
+    </div>
+  </div>
+
+  <!-- ====== Main Content ====== -->
+  <main class="container">
+
+    <!-- --- Simulation Panel --- -->
+    <section id="simulation">
+      <div class="section-title">Simulation</div>
+      <div class="simulation-panel">
+        <h2>Fuel Transaction Simulator</h2>
+        <p>Enter the requested fuel amount to simulate a petrol filling transaction and detect potential fraud.</p>
+
+        <div class="sim-form">
+          <div class="form-group">
+            <label for="fuelInput">Requested Fuel (Liters)</label>
+            <input
+              type="number"
+              id="fuelInput"
+              placeholder="e.g. 5"
+              step="0.01"
+              min="0.01"
+            />
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="btnSimulate" onclick="simulateTransaction()">
+              <span class="spinner"></span>
+              <span class="btn-text">Simulate Transaction</span>
+            </button>
+            <button class="btn btn-secondary" id="btnReport" onclick="generateReport()">
+              <span class="spinner"></span>
+              <span class="btn-text">Generate Report</span>
+            </button>
+            <button class="btn btn-secondary" id="btnExport" onclick="exportJSON()">
+              <span class="spinner"></span>
+              <span class="btn-text">Export JSON</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --- Result Panel --- -->
+    <section id="resultSection">
+      <div class="result-panel" id="resultPanel">
+        <h2>Transaction Result</h2>
+        <div class="result-grid" id="resultGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- --- Analytics Dashboard --- -->
+    <section id="analytics">
+      <div class="section-title">Analytics Dashboard</div>
+      <div class="analytics-grid" id="analyticsGrid">
+        <div class="analytics-card">
+          <div class="card-label">Total Transactions</div>
+          <div class="card-value" id="statTotal">0</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-label">Fraud Transactions</div>
+          <div class="card-value danger" id="statFraud">0</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-label">Safe Transactions</div>
+          <div class="card-value success" id="statSafe">0</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-label">Fraud Percentage</div>
+          <div class="card-value" id="statFraudPct">0%</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-label">Average Shortage</div>
+          <div class="card-value" id="statAvgShortage">0%</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-label">Highest Shortage</div>
+          <div class="card-value danger" id="statHighShortage">0%</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --- Charts --- -->
+    <section id="charts">
+      <div class="section-title">Charts</div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Fraud vs Safe Transactions</h3>
+          <div class="chart-wrapper">
+            <canvas id="fraudChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Fuel Shortage Trends</h3>
+          <div class="chart-wrapper">
+            <canvas id="shortageChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --- Transaction Table --- -->
+    <section id="transactions">
+      <div class="section-title">Transaction Monitoring</div>
+      <div class="table-panel">
+        <div class="table-header">
+          <h2>All Transactions</h2>
+          <div class="table-controls">
+            <input
+              type="text"
+              class="search-input"
+              id="searchInput"
+              placeholder="Search by ID…"
+              oninput="filterTable()"
+            />
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+            <button class="filter-btn" data-filter="fraud" onclick="setFilter('fraud', this)">Fraud Only</button>
+            <button class="filter-btn" data-filter="safe" onclick="setFilter('safe', this)">Safe Only</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Requested (L)</th>
+                <th>Delivered (L)</th>
+                <th>Difference (L)</th>
+                <th>Shortage</th>
+                <th>Fraud Status</th>
+                <th>Risk Level</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="txTableBody">
+              <tr>
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    No transactions yet. Run a simulation to get started.
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ====== Toast ====== -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ====== Footer ====== -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <strong>FuelGuard AI</strong> — AI-Powered Fuel Fraud Detection System
+      </div>
+      <div class="footer-right">
+        Software Prototype &middot; Simulated Data Only &middot; &copy; 2026
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
